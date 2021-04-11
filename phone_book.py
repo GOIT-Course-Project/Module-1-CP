@@ -19,6 +19,28 @@ class Field:
         self.__value = value
 
 
+class Birthday(Field):
+    # def __init__(self, birthday=''):
+    #     self.birthday = birthday
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if not new_value:
+            self.__value = new_value
+        else:
+            if not re.match('\d{2}-\d{2}', new_value):
+                raise ValueError('Birthday must be "mm-dd" format')
+            b_month, b_day = new_value.split('-')
+            if int(b_month) > 12 or int(b_day) > 31:
+                raise ValueError(
+                    'Month must be in "01-12" day must be in "01-31"')
+            else:
+                self.__value = new_value
+
+
 class Name(Field):
 
     @property
@@ -45,28 +67,6 @@ class Phone(Field):
             self.__value = new_value
 
 
-class Birthday(Field):
-    # def __init__(self, birthday=''):
-    #     self.birthday = birthday
-    @property
-    def value(self):
-        return self.__value
-
-    @value.setter
-    def value(self, new_value):
-        if not new_value:
-            self.__value = new_value
-        else:
-            if not re.match('\d{2}-\d{2}', new_value):
-                raise ValueError('Birthday must be "mm-dd" format')
-            b_month, b_day = new_value.split('-')
-            if int(b_month) > 12 or int(b_day) > 31:
-                raise ValueError(
-                    'Month must be in "01-12" day must be in "01-31"')
-            else:
-                self.__value = new_value
-
-
 class Email(Field):
     @property
     def value(self):
@@ -84,6 +84,16 @@ class Email(Field):
                 self.__value = new_value
 
 
+class Address(Field):
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        self.__value = new_value
+
+
 class Record:
 
     def __init__(self, *args):
@@ -92,6 +102,7 @@ class Record:
         self.records['phones'] = []
         self.records['birthday'] = ''
         self.records['email'] = ''
+        self.records['address'] = ''
 
         for arg in args:
 
@@ -103,6 +114,8 @@ class Record:
                 self.records['birthday'] = arg.value
             elif isinstance(arg, Email):
                 self.records['email'] = arg.value
+            elif isinstance(arg, Address):
+                self.records['address'] = arg.value
 
     def add_phone(self, obj):
         if isinstance(obj, Phone):
@@ -159,9 +172,28 @@ class AddressBook(UserDict):
     def __setstate__(self, state):
         self.__dict__ = state
 
+    def __str__(self):
+        result = ''
+        for key, data in self.data.items():
+            result += f'id - {key} | name - {data["name"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}\n'
+        return result
+
     def add_record(self, obj):
         if isinstance(obj, Record):
             self.data[len(self.data)] = obj.records
+
+    def delete_record(self, key):
+        if key in self.data:
+            self.data.pop(key)
+            new_ab = UserDict()
+            i = 0
+            for v in self.data.values():
+                new_ab[i] = v
+                i += 1
+            self.data = new_ab
+            print(len(self.data))
+        else:
+            return(f'{key} is not exist in AddressBook.')
 
     def find(self, param):
 

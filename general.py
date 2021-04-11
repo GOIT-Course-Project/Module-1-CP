@@ -7,32 +7,43 @@ import notes_book as nb
 # tuple with commands words
 EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
 ADD_COMMANDS = ("add", "+")
+DELTE_COMMANDS = ("-", "del", "delete")
 GREETING_COMMANDS = ("hello", "alloha",)
 SHOW_PHONE_COMMANDS = ("pbone", "pb")
 SHOW_ALL_COMMANDS = ("show all", "show")
 HELP_COMMANDS = ("help",)
-CURRENT_MODES = {'1': 'PoneBook mode',
+CURRENT_MODES = {'1': 'PhoneBook mode',
                  '2': 'Notes mode', '3': 'Clear folder mode'}
 CURRENT_MODE = ''
 
 # command helpers
 
 
-def add_phone(*args):
+def loadAB():
     if not pb.load_addressBook():
         ab = pb.AddressBook()
     else:
         ab = pb.load_addressBook()
+
+    return ab
+
+
+def add_phone(*args):
+
+    ab = loadAB()
+
     name = pb.Name(input('Contact name (required): '))
     print(name.value)
 
+    address = pb.Address(input('Contact address (optional): '))
+
     while True:
         try:
-            pbone = pb.Phone(input('Contact phone (required): '))
+            phone = pb.Phone(input('Contact phone (required): '))
             break
         except ValueError as e:
             print(e)
-    print(pbone.value)
+    print(phone.value)
 
     while True:
         try:
@@ -50,11 +61,20 @@ def add_phone(*args):
             print(e)
     print(email.value)
 
-    record = pb.Record(name, pbone, birthday, email)
+    record = pb.Record(name, address, phone, birthday, email)
     confirm = input(
         f'Add record {record.records} to address book (y/n)?: ')
     if confirm.lower() == 'y':
         ab.add_record(record)
+        pb.save_addressBook(ab)
+
+
+def delete_ab_record(id):
+    if not id:
+        return (f'Soryy, for deleting type id record after command')
+    else:
+        ab = loadAB()
+        ab.delete_record(int(id))
         pb.save_addressBook(ab)
 
 
@@ -111,7 +131,7 @@ def show_all_command(*args):
             ab = pb.AddressBook()
         else:
             ab = pb.load_addressBook()
-        print(ab.values())
+        print(ab)
 
     if CURRENT_MODE == '2':
         if not nb.load_notesBook():
@@ -129,12 +149,17 @@ def help_command(*args):
             in each mode you can call command 'help' for more information""")
 
 
+def delete_command(*args):
+    if CURRENT_MODE == '1':
+        print(delete_ab_record(args[0]))
+
+
 def exit_command(*args):
     return('exit')
 
 
 COMMANDS = {ADD_COMMANDS: add_command, GREETING_COMMANDS: greeting_command,
-            SHOW_PHONE_COMMANDS: show_phone_command, SHOW_ALL_COMMANDS: show_all_command, EXIT_COMMANDS: exit_command, HELP_COMMANDS: help_command}
+            SHOW_PHONE_COMMANDS: show_phone_command, SHOW_ALL_COMMANDS: show_all_command, EXIT_COMMANDS: exit_command, HELP_COMMANDS: help_command, DELTE_COMMANDS: delete_command}
 
 
 # general function
