@@ -60,9 +60,26 @@ class Birthday(Field):
             if not re.match('\d{2}-\d{2}', new_value):
                 raise ValueError('Birthday must be "mm-dd" format')
             b_month, b_day = new_value.split('-')
-            if int(b_month) > 12 and int(b_day) > 31:
+            if int(b_month) > 12 or int(b_day) > 31:
                 raise ValueError(
                     'Month must be in "01-12" day must be in "01-31"')
+            else:
+                self.__value = new_value
+
+
+class Email(Field):
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if not new_value:
+            self.__value = new_value
+        else:
+            if not re.match('^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$', new_value):
+                raise ValueError(
+                    'Email not valid format, must be "name@domenname.com"')
             else:
                 self.__value = new_value
 
@@ -74,6 +91,7 @@ class Record:
         self.records = {}
         self.records['phones'] = []
         self.records['birthday'] = ''
+        self.records['email'] = ''
 
         for arg in args:
 
@@ -83,6 +101,8 @@ class Record:
                 self.records['phones'].append(arg.value)
             elif isinstance(arg, Birthday):
                 self.records['birthday'] = arg.value
+            elif isinstance(arg, Email):
+                self.records['email'] = arg.value
 
     def add_phone(self, obj):
         if isinstance(obj, Phone):

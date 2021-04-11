@@ -1,11 +1,14 @@
 from os import error
-import phone_book as ph
+
+
+import phone_book as pb
+import notes_book as nb
 
 # tuple with commands words
 EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
 ADD_COMMANDS = ("add", "+")
 GREETING_COMMANDS = ("hello", "alloha",)
-SHOW_PHONE_COMMANDS = ("phone", "pb")
+SHOW_PHONE_COMMANDS = ("pbone", "pb")
 SHOW_ALL_COMMANDS = ("show all", "show")
 HELP_COMMANDS = ("help",)
 CURRENT_MODES = {'1': 'PoneBook mode',
@@ -15,36 +18,82 @@ CURRENT_MODE = ''
 # command helpers
 
 
+def add_phone(*args):
+    if not pb.load_addressBook():
+        ab = pb.AddressBook()
+    else:
+        ab = pb.load_addressBook()
+    name = pb.Name(input('Contact name (required): '))
+    print(name.value)
+
+    while True:
+        try:
+            pbone = pb.Phone(input('Contact phone (required): '))
+            break
+        except ValueError as e:
+            print(e)
+    print(pbone.value)
+
+    while True:
+        try:
+            birthday = pb.Birthday(input('Contact birthday (optional): '))
+            break
+        except ValueError as e:
+            print(e)
+    print(birthday.value)
+
+    while True:
+        try:
+            email = pb.Email(input('Contact email (optional): '))
+            break
+        except ValueError as e:
+            print(e)
+    print(email.value)
+
+    record = pb.Record(name, pbone, birthday, email)
+    confirm = input(
+        f'Add record {record.records} to address book (y/n)?: ')
+    if confirm.lower() == 'y':
+        ab.add_record(record)
+        pb.save_addressBook(ab)
+
+
+def add_notes(*args):
+    if not nb.load_notesBook():
+        notesB = nb.NotesBook()
+    else:
+        notesB = nb.load_notesBook()
+
+    while True:
+        try:
+            note = nb.Note(input('Type your notes (required): '))
+            break
+        except ValueError as e:
+            print(e)
+    print(note.value)
+
+    while True:
+        try:
+            teg = nb.Teg(input('Type Teg for your notes (required): '))
+            break
+        except ValueError as e:
+            print(e)
+    print(teg.value)
+
+    record = nb.NoteRecord(note, teg)
+
+    confirm = input(
+        f'Add notes {record.noterecors} to NotessBook (y/n)?: ')
+    if confirm.lower() == 'y':
+        notesB.add_record(record)
+        nb.save_notesBook(notesB)
+
+
 def add_command(*args):
     if CURRENT_MODE == '1':
-        if not ph.load_addressBook():
-            ad = ph.AddressBook()
-        else:
-            ad = ph.load_addressBook()
-        name = ph.Name(input('Contact name (required): '))
-        print(name.value)
-
-        while True:
-            try:
-                phone = ph.Phone(input('Contact phone (required): '))
-                break
-            except ValueError as e:
-                print(e)
-        print(phone.value)
-
-        while True:
-            try:
-                birthday = ph.Birthday(input('Contact birthday (optional): '))
-                break
-            except ValueError as e:
-                print(e)
-        print(birthday.value)
-        record = ph.Record(name, phone, birthday)
-        confirm = input(
-            f'Add record {record.records} to address book (y/n)?: ')
-        if confirm.lower() == 'y':
-            ad.add_record(record)
-            ph.save_addressBook(ad)
+        add_phone()
+    if CURRENT_MODE == '2':
+        add_notes()
 
 
 def greeting_command(*args):
@@ -52,18 +101,24 @@ def greeting_command(*args):
 
 
 def show_phone_command(*args):
-    print(f'in show_phone_command')
-    ph.load_addressBook()
-    ph.Phone
+    print(f'in show_pbone_command')
+    pb.load_addressBook()
 
 
 def show_all_command(*args):
     if CURRENT_MODE == '1':
-        if not ph.load_addressBook():
-            ad = ph.AddressBook()
+        if not pb.load_addressBook():
+            ab = pb.AddressBook()
         else:
-            ad = ph.load_addressBook()
-        print(ad.values())
+            ab = pb.load_addressBook()
+        print(ab.values())
+
+    if CURRENT_MODE == '2':
+        if not nb.load_notesBook():
+            noteB = nb.NotesBook()
+        else:
+            noteB = nb.load_notesBook()
+        print(noteB.values())
 
 
 def help_command(*args):
@@ -71,7 +126,7 @@ def help_command(*args):
             1. First - {CURRENT_MODES['1']} \n
             2. Second - {CURRENT_MODES['2']} \n
             3. Third - {CURRENT_MODES['3']}\n
-            in each mode you can call command 'halp' to more information""")
+            in each mode you can call command 'help' for more information""")
 
 
 def exit_command(*args):
@@ -124,7 +179,7 @@ def work_mode(*args):
 if __name__ == '__main__':
     print('Hi! I\'m your personal helper (PH). For more information type "help"')
     while True:
-        result = input('PH says - please, chose workmode or "exit":')
+        result = input('PH says - please, select a workmode or "exit":')
         if result in ('1', '2', '3'):
             work_mode(result)
         else:
