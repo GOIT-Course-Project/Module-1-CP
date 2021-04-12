@@ -33,7 +33,7 @@ class Note(Field):
 class Teg(Field):
 
     def __init__(self, value):
-        self.__value = None
+        self.__value = ''
         self.value = value
 
     @property
@@ -53,7 +53,7 @@ class NoteRecord():
     def __init__(self, *args):
         self.noterecors = {}
         self.noterecors['Note'] = None
-        self.noterecors['Teg'] = None
+        self.noterecors['Teg'] = ''
 
         for arg in args:
             if isinstance(arg, Note):
@@ -86,7 +86,7 @@ class NotesBook(UserDict):
             self.data[len(self.data)] = obj.noterecors
             return self.data
 
- # edit and del NOTE
+ # edit, del and find NOTE
     def edit_note(self, index, new_obj):
         self._count = 0
         if len(self.data) > index:
@@ -100,13 +100,47 @@ class NotesBook(UserDict):
             return 'Note index is not exist'
 
     def del_note(self, index):
-        if len(self.data) > index:
-            del self.data[index]
+        if index in self.data.keys():
+            self.data.pop(index)
+            new_nb = UserDict()
+            i = 0
+            for v in self.data.values():
+                new_nb[i] = v
+                i += 1
+            self.data = new_nb
             return self.data
         else:
-            return 'Note index is not exist'
+            return(f'{index} is not exist in NoteBook.')
 
-# edit and del TEG
+    def find_note(self, line):
+        self.value = str(line)
+        self.dict_key = {}
+        self.dict_value = {}
+        result_key = None
+        result_value = None
+        for key, value in self.data.items():
+            if line.isdigit():
+                if str(key).find(self.value) >= 0:
+                    self.dict_key[key] = self.data[key]
+            if line.isalpha():
+                if len(self.value) >= 3 :
+                    if value['Note'].find(self.value) >= 0:
+                        self.dict_value[key] = value
+                else:
+                    return(f'{line} is too short')
+
+        if len(self.dict_key) > 0 and len(self.dict_value)> 0:
+            return self.dict_key, self.dict_value
+        elif len(self.dict_key) > 0 and len(self.dict_value)== 0:
+            return self.dict_key
+        elif len(self.dict_key) == 0 and len(self.dict_value)> 0:
+            return self.dict_value
+
+
+
+        
+
+# edit, del and find TEG
     def edit_teg(self, index, new_obj):
         self._count = 0
         if len(self.data) > index:
@@ -121,11 +155,33 @@ class NotesBook(UserDict):
 
     def del_teg(self, index):
         if len(self.data) > index:
-            self.data[index]['Teg'] = None
+            self.data[index]['Teg'] = ''
             return self.data
         else:
             return 'Teg index is not exist'
-            
+
+    def find_teg(self, line):
+        self.value = str(line)
+        self.dict_key = {}
+        self.dict_value = {}
+        
+        for key, value in self.data.items():
+            if line.isdigit():
+                if str(key).find(self.value) >= 0:
+                    self.dict_key[key] = self.data[key]
+            if line.isalpha():
+                if len(self.value) >= 3 :
+                    if value['Teg'].find(self.value) >= 0:
+                        self.dict_value[key] = value
+                else:
+                    return(f'{line} is too short')
+
+        if len(self.dict_key) > 0 and len(self.dict_value)> 0:
+            return self.dict_key, self.dict_value
+        elif len(self.dict_key) > 0 and len(self.dict_value)== 0:
+            return self.dict_key
+        elif len(self.dict_key) == 0 and len(self.dict_value)> 0:
+            return self.dict_value
 
 
 
@@ -146,7 +202,36 @@ def load_notesBook():
 
 if __name__ == '__main__':
 
-    pass
+    while True:
+        af = Note(input('Enter the note: '))
+            
+        if af.value != None:
+            break
+        
+        
+    while True:       
+        t = Teg(input('Enter the teg: '))
+        if t.value != None:
+            break
+       
+
+    record = NoteRecord(af, t)
+    record1 = NoteRecord(t, Note('Ghjcnj'))
+    record2 = NoteRecord(af)
+    book = NotesBook()
+    print(book.add_record(record))
+    print(book.add_record(record1))
+    print(book.add_record(record2))
+
+    c = Note(input('Enter the new note:'))
+    print(book.edit_note(0, c))
+    print(book.del_note(1))
+    print(book.add_record(record1))
+    print(book.edit_teg(0, Teg('weekf')))
+    #print(book.del_teg(0))
+    print(book.find_note('0'))
+    print(book.find_note('он'))
+    print(book.find_teg('week'))
     
 
 
