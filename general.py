@@ -53,6 +53,8 @@ def add_phone(*args):
             print(e)
     print(birthday.value)
 
+
+def input_email():
     while True:
         try:
             email = pb.Email(input('Contact email (optional): '))
