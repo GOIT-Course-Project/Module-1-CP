@@ -117,6 +117,10 @@ class Record:
             elif isinstance(arg, Address):
                 self.records['address'] = arg.value
 
+    def __str__(self):
+        result = f'Name - {self.records["name"]}, phones - {self.records["phones"]}, email - {self.records["email"]}, address - {self.records["address"]}, birthday - {self.records["birthday"]}'
+        return result
+
     def add_phone(self, obj):
         if isinstance(obj, Phone):
             self.records['phones'].append(obj.value)
@@ -126,9 +130,8 @@ class Record:
         if isinstance(obj, Phone):
             self.records['phones'][index] = obj.value
 
-    def delete_phone(self, obj):
-        if isinstance(obj, Phone):
-            self.records['phones'].remove(obj.value)
+    def delete_phone(self, index):
+        self.records['phones'].pop(index)
 
     def __count_days(self, d_now, d_birth):
         if d_now > d_birth:
@@ -175,7 +178,7 @@ class AddressBook(UserDict):
     def __str__(self):
         result = ''
         for key, data in self.data.items():
-            result += f'id - {key} | name - {data["name"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}\n'
+            result += f'id - {key} | name - {data["name"]} | birthday - {data["birthday"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}\n'
         return result
 
     def add_record(self, obj):
@@ -191,7 +194,6 @@ class AddressBook(UserDict):
                 new_ab[i] = v
                 i += 1
             self.data = new_ab
-            print(len(self.data))
         else:
             return(f'{key} is not exist in AddressBook.')
 

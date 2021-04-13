@@ -2,6 +2,7 @@ from collections import UserDict
 import pickle
 import re
 
+
 class Field():
     def __init__(self, value):
         self.__value = None
@@ -17,12 +18,12 @@ class Note(Field):
     @property
     def value(self):
         return self.__value
-    
+
     @value.setter
     def value(self, value):
-        if re.match(r'[A-Za-zА-Яа-я]\w{2}', value) and len(value) < 30:
+        if re.match(r'\w', value) and len(value) < 30:
             self.__value = value
-        elif re.match(r'[A-Za-zА-Яа-я]\w{2}', value) and len(value) > 30:
+        elif re.match(r'\w', value) and len(value) > 30:
             print('Note is more lenght')
         elif len(value) < 4:
             print('Note is too short')
@@ -44,10 +45,12 @@ class Teg(Field):
     def value(self, value):
         if not value:
             self.__value = value
-        if re.match(r'[A-Za-zА-Яа-я]\w{2}', value) and len(value) >= 3:
-            self.__value = value
         else:
-            print(f'Teg is too long')
+            if re.match(r'[A-Za-zА-Яа-я]\w{2}', value) and len(value) >= 3:
+                self.__value = value
+            else:
+                print(f'Teg is too long')
+
 
 class NoteRecord():
     def __init__(self, *args):
@@ -65,7 +68,6 @@ class NoteRecord():
         if isinstance(obj, Note):
             self.noterecors['Note'] = obj.value
 
-        
     def edit_teg(self, obj):
         if isinstance(obj, Teg):
             self.noterecors['Teg'] = obj.value
@@ -81,6 +83,12 @@ class NotesBook(UserDict):
         super(NotesBook, self).__init__()
         self._count = 0
 
+    def __str__(self):
+        result = ''
+        for key, data in self.data.items():
+            result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+        return result
+
     def add_record(self, obj):
         if isinstance(obj, NoteRecord):
             self.data[len(self.data)] = obj.noterecors
@@ -94,7 +102,7 @@ class NotesBook(UserDict):
                 for i in self.data.values():
                     if self._count == index:
                         i['Note'] = new_obj.value
-                    self._count +=1
+                    self._count += 1
             return self.data
         else:
             return 'Note index is not exist'
@@ -123,24 +131,22 @@ class NotesBook(UserDict):
                 if str(key).find(self.value) >= 0:
                     self.dict_key[key] = self.data[key]
             if line.isalpha():
-                if len(self.value) >= 3 :
+                if len(self.value) >= 3:
                     if value['Note'].find(self.value) >= 0:
                         self.dict_value[key] = value
                 else:
                     return(f'{line} is too short')
 
-        if len(self.dict_key) > 0 and len(self.dict_value)> 0:
+        if len(self.dict_key) > 0 and len(self.dict_value) > 0:
             return self.dict_key, self.dict_value
-        elif len(self.dict_key) > 0 and len(self.dict_value)== 0:
+        elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
             return self.dict_key
-        elif len(self.dict_key) == 0 and len(self.dict_value)> 0:
+        elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
             return self.dict_value
 
 
-
-        
-
 # edit, del and find TEG
+
     def edit_teg(self, index, new_obj):
         self._count = 0
         if len(self.data) > index:
@@ -148,10 +154,10 @@ class NotesBook(UserDict):
                 for i in self.data.values():
                     if self._count == index:
                         i['Teg'] = new_obj.value
-                    self._count +=1
+                    self._count += 1
             return self.data
         else:
-            return 'Teg index is not exist' 
+            return 'Teg index is not exist'
 
     def del_teg(self, index):
         if len(self.data) > index:
@@ -164,25 +170,24 @@ class NotesBook(UserDict):
         self.value = str(line)
         self.dict_key = {}
         self.dict_value = {}
-        
+
         for key, value in self.data.items():
             if line.isdigit():
                 if str(key).find(self.value) >= 0:
                     self.dict_key[key] = self.data[key]
             if line.isalpha():
-                if len(self.value) >= 3 :
+                if len(self.value) >= 3:
                     if value['Teg'].find(self.value) >= 0:
                         self.dict_value[key] = value
                 else:
                     return(f'{line} is too short')
 
-        if len(self.dict_key) > 0 and len(self.dict_value)> 0:
+        if len(self.dict_key) > 0 and len(self.dict_value) > 0:
             return self.dict_key, self.dict_value
-        elif len(self.dict_key) > 0 and len(self.dict_value)== 0:
+        elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
             return self.dict_key
-        elif len(self.dict_key) == 0 and len(self.dict_value)> 0:
+        elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
             return self.dict_value
-
 
 
 def save_notesBook(obj):
@@ -204,16 +209,14 @@ if __name__ == '__main__':
 
     while True:
         af = Note(input('Enter the note: '))
-            
+
         if af.value != None:
             break
-        
-        
-    while True:       
+
+    while True:
         t = Teg(input('Enter the teg: '))
         if t.value != None:
             break
-       
 
     record = NoteRecord(af, t)
     record1 = NoteRecord(t, Note('Ghjcnj'))
@@ -228,18 +231,7 @@ if __name__ == '__main__':
     print(book.del_note(1))
     print(book.add_record(record1))
     print(book.edit_teg(0, Teg('weekf')))
-    #print(book.del_teg(0))
+    # print(book.del_teg(0))
     print(book.find_note('0'))
     print(book.find_note('он'))
     print(book.find_teg('week'))
-    
-
-
-
-
-
-
-
-
-
-
