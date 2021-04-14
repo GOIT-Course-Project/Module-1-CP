@@ -21,9 +21,9 @@ class Note(Field):
 
     @value.setter
     def value(self, value):
-        if re.match(r'\w', value) and len(value) < 30:
+        if re.match(r'\w', value) and len(value) < 50:
             self.__value = value
-        elif re.match(r'\w', value) and len(value) > 30:
+        elif re.match(r'\w', value) and len(value) > 50:
             print('Note is more lenght')
         elif len(value) < 4:
             print('Note is too short')
@@ -64,6 +64,9 @@ class NoteRecord():
             elif isinstance(arg, Teg):
                 self.noterecors['Teg'] = arg.value
 
+    def __str__(self):
+        return f'Note: {self.noterecors["Note"][:5]}... | Teg: {self.noterecors["Teg"]}'
+
     def edit_note(self, obj):
         if isinstance(obj, Note):
             self.noterecors['Note'] = obj.value
@@ -86,13 +89,29 @@ class NotesBook(UserDict):
     def __str__(self):
         result = ''
         for key, data in self.data.items():
-            result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            result += f'id  {key} | note - {data["Note"]} | teg - {data["Teg"]}\n'
         return result
+
+    def __getitem__(self, key):
+        rec = self.data[key]
+        return f'id - {key} | Note: {rec["Note"]} | Teg: {rec["Teg"]}'
 
     def add_record(self, obj):
         if isinstance(obj, NoteRecord):
             self.data[len(self.data)] = obj.noterecors
             return self.data
+
+    def delete_record(self, key):
+        if key in self.data:
+            self.data.pop(key)
+            new_ab = UserDict()
+            i = 0
+            for v in self.data.values():
+                new_ab[i] = v
+                i += 1
+            self.data = new_ab
+        else:
+            return(f'{key} is not exist in NoteBook.')
 
  # edit, del and find NOTE
     def edit_note(self, index, new_obj):
@@ -121,31 +140,37 @@ class NotesBook(UserDict):
             return(f'{index} is not exist in NoteBook.')
 
     def find_note(self, line):
-        self.value = str(line)
-        self.dict_key = {}
-        self.dict_value = {}
-        result_key = None
-        result_value = None
+        result = []
         for key, value in self.data.items():
-            if line.isdigit():
-                if str(key).find(self.value) >= 0:
-                    self.dict_key[key] = self.data[key]
-            if line.isalpha():
-                if len(self.value) >= 3:
-                    if value['Note'].find(self.value) >= 0:
-                        self.dict_value[key] = value
-                else:
-                    return(f'{line} is too short')
+            if line in value['Note'].lower():
+                result.append(str(self[key]))
+        return result
+        # self.value = str(line)
+        # self.dict_key = {}
+        # self.dict_value = {}
+        # result_key = None
+        # result_value = None
+        # for key, value in self.data.items():
+        #     if line.isdigit():
+        #         if str(key).find(self.value) >= 0:
+        #             self.dict_key[key] = self.data[key]
+        #     if line.isalpha():
+        #         if len(self.value) >= 3:
+        #             if value['Note'].find(self.value) >= 0:
+        #                 self.dict_value[key] = value
+        #         else:
+        #             return(f'{line} is too short')
 
-        if len(self.dict_key) > 0 and len(self.dict_value) > 0:
-            return self.dict_key, self.dict_value
-        elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
-            return self.dict_key
-        elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
-            return self.dict_value
+        # if len(self.dict_key) > 0 and len(self.dict_value) > 0:
+        #     return self.dict_key, self.dict_value
+        # elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
+        #     return self.dict_key
+        # elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
+        #     return self.dict_value
 
 
 # edit, del and find TEG
+
 
     def edit_teg(self, index, new_obj):
         self._count = 0

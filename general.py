@@ -1,4 +1,4 @@
-from os import error, name
+from os import error, name, supports_bytes_environ
 import re
 
 
@@ -9,6 +9,7 @@ import notes_book as nb
 EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
 FIND_COMMANDS = ("find",)
 EDIT_COMMANDS = ("edit",)
+BIRTHDAY_COMMANDS = ("birthday",)
 SELECT_COMMANDS = ("select",)
 ADD_COMMANDS = ("add", "+")
 DELETE_COMMANDS = ("delete", "del", "-",)
@@ -19,6 +20,7 @@ CURRENT_MODES = {'1': 'PhoneBook mode',
                  '2': 'Notes mode', '3': 'Clear folder mode'}
 CURRENT_MODE = ''
 CURRENT_RECORD = None
+CURRENT_ID = None
 
 
 # function helpers
@@ -30,6 +32,14 @@ def loadAB():
         ab = pb.load_addressBook()
 
     return ab
+
+
+def load_obj_record(rec):
+
+    if CURRENT_MODE == '1':
+        return pb.Record(pb.Name(rec['name']), pb.Email(rec['email']), pb.Address(rec['address']), pb.Birthday(rec['birthday']), *(pb.Phone(i) for i in rec['phones']))
+    elif CURRENT_MODE == '2':
+        return nb.NoteRecord(nb.Note(rec['Note']), nb.Teg(rec['Teg']))
 
 
 def loadNB():
@@ -135,6 +145,15 @@ def delete_ab_record(id):
         pb.save_addressBook(ab)
 
 
+def delete_nb_record(id):
+    if not id:
+        return (f'Soryy, for deleting type id record after command')
+    else:
+        noteB = loadNB()
+        noteB.delete_record(int(id))
+        nb.save_notesBook(noteB)
+
+
 def add_notes(*args):
     notesB = loadNB()
 
@@ -152,10 +171,22 @@ def add_notes(*args):
 
 
 def update_ab(record):
-    global CURRENT_RECORD
+    global CURRENT_RECORD, CURRENT_ID
+    delete_ab_record(CURRENT_ID)
     ab = loadAB()
     ab.add_record(record)
     pb.save_addressBook(ab)
+    CURRENT_ID = None
+    CURRENT_RECORD = None
+
+
+def update_nb(record):
+    global CURRENT_RECORD, CURRENT_ID
+    delete_nb_record(CURRENT_ID)
+    noteB = loadNB()
+    noteB.add_record(record)
+    nb.save_notesBook(noteB)
+    CURRENT_ID = None
     CURRENT_RECORD = None
 
 
@@ -175,6 +206,26 @@ def add_command(*args):
         phone_add()
     if CURRENT_MODE == '2':
         add_notes()
+
+
+def birthday_command(*args):
+    result = []
+    if CURRENT_MODE == '1':
+        ab = loadAB()
+        for key, rec in ab.data.items():
+
+            if not args[0] == '':
+                if load_obj_record(rec).days_to_birthday() <= int(args[0]):
+                    result.append(ab[key])
+            else:
+                result.append(
+                    f'id - {key} | name - {rec["name"]} | birthday - {rec["birthday"]}')
+    if len(result) == 0:
+        result.append(
+            f'You are a happy man \N{grinning face with smiling eyes}')
+
+    for i in result:
+        print(i)
 
 
 def greeting_command(*args):
@@ -197,42 +248,53 @@ def show_all_command(*args):
 
 
 def select_command(*args):
-    global CURRENT_RECORD
+    global CURRENT_RECORD, CURRENT_ID
     if CURRENT_MODE == '1':
         ab = loadAB()
-        CURRENT_RECORD = pb.Record(pb.Name(ab[int(args[0])]['name']), pb.Email(ab[int(args[0])]['email']), pb.Address(
-            ab[int(args[0])]['address']), pb.Birthday(ab[int(args[0])]['birthday']), *(pb.Phone(i) for i in ab[int(args[0])]['phones']))
-        delete_ab_record(args[0])
+        CURRENT_ID = args[0]
+        try:
+            CURRENT_RECORD = load_obj_record(ab.data[int(CURRENT_ID)])
+        except KeyError as e:
+            print(f'Sorry, PhoneBook has no record with id {e}')
+        # pb.Record(pb.Name(ab[int(args[0])]['name']), pb.Email(ab[int(args[0])]['email']), pb.Address(
+        #     ab[int(args[0])]['address']), pb.Birthday(ab[int(args[0])]['birthday']), *(pb.Phone(i) for i in ab[int(args[0])]['phones']))
     elif CURRENT_MODE == '2':
         noteB = loadNB()
-        CURRENT_RECORD = nb.NoteRecord(
-            nb.Note(noteB[int(args[0])]['Note']),
-            nb.Teg(noteB[int(args[0])]['Teg']))
+        CURRENT_ID = args[0]
+        CURRENT_RECORD = load_obj_record(noteB.data[int(CURRENT_ID)])
 
 
 def edit_command(*args):
 
-    if CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'phone':
+    if CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'phone':
         new_phone = input_phone()
         CURRENT_RECORD.delete_phone(int(args[0]))
         CURRENT_RECORD.add_phone(new_phone)
         update_ab(CURRENT_RECORD)
 
-    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'name':
+    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'name':
         CURRENT_RECORD.records['name'] = input_name()
         update_ab(CURRENT_RECORD)
 
-    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'birthday':
+    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'birthday':
         CURRENT_RECORD.records['birthday'] = input_birthday().value
         update_ab(CURRENT_RECORD)
 
-    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'email':
+    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'email':
         CURRENT_RECORD.records['email'] = input_email().value
         update_ab(CURRENT_RECORD)
 
-    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'address':
+    elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'address':
         CURRENT_RECORD.records['address'] = input_address().value
         update_ab(CURRENT_RECORD)
+
+    elif CURRENT_MODE == '2' and CURRENT_RECORD and args[0].lower() == 'note':
+        CURRENT_RECORD.edit_note(input_note())
+        update_nb(CURRENT_RECORD)
+
+    elif CURRENT_MODE == '2' and CURRENT_RECORD and args[0].lower() == 'teg':
+        CURRENT_RECORD.edit_teg(input_teg())
+        update_nb(CURRENT_RECORD)
 
 
 def help_command(*args):
@@ -257,12 +319,26 @@ def delete_command(*args):
     elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'phone':
         CURRENT_RECORD.delete_phone(int(args[1]))
         update_ab(CURRENT_RECORD)
+    elif CURRENT_MODE == '2' and not CURRENT_RECORD and args[0].isdigit():
+        delete_nb_record(args[0])
 
 
 def find_command(*args):
     if CURRENT_MODE == '1':
         ab = loadAB()
-        print(ab.find(args[0]))
+        try:
+            for value in ab.find(args[0]):
+                print(value)
+        except ValueError as e:
+            print(e)
+
+    if CURRENT_MODE == '2':
+        noteB = loadNB()
+        try:
+            for value in noteB.find_note(args[0]):
+                print(value)
+        except ValueError as e:
+            print(e)
 
 
 def exit_command(*args):
@@ -273,7 +349,7 @@ def exit_command(*args):
 
 COMMANDS = {ADD_COMMANDS: add_command, GREETING_COMMANDS: greeting_command, SHOW_ALL_COMMANDS: show_all_command,
             EXIT_COMMANDS: exit_command, HELP_COMMANDS: help_command, DELETE_COMMANDS: delete_command,
-            SELECT_COMMANDS: select_command, EDIT_COMMANDS: edit_command, FIND_COMMANDS: find_command}
+            SELECT_COMMANDS: select_command, EDIT_COMMANDS: edit_command, FIND_COMMANDS: find_command, BIRTHDAY_COMMANDS: birthday_command}
 
 
 # general function
@@ -306,7 +382,7 @@ def work_mode(*args):
         CURRENT_MODE = args[0]
         while True:
             result = parse_command(
-                input(f'({CURRENT_MODES[args[0]]}{"" if not CURRENT_RECORD else str(CURRENT_RECORD) }) type command: '))
+                input(f'({CURRENT_MODES[args[0]]} {"" if not CURRENT_RECORD else str(CURRENT_RECORD) }) type command: '))
             if result == 'exit':
                 print("Good Bye!")
                 CURRENT_MODE = ''

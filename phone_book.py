@@ -145,9 +145,9 @@ class Record:
             result = self.__count_days(datetime.now().date(), date(year=datetime.now().year, month=int(
                 __birthday.split('-')[0]), day=int(__birthday.split('-')[1])))
 
-            return f'There are {result.days} days left until the birthday'
+            return result.days
         else:
-            return f'Sorry, the contact has no date of birth'
+            return -1
 
 
 class AddressBook(UserDict):
@@ -181,6 +181,10 @@ class AddressBook(UserDict):
             result += f'id - {key} | name - {data["name"]} | birthday - {data["birthday"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}\n'
         return result
 
+    def __getitem__(self, key):
+        rec = self.data[key]
+        return f'id - {key} | name - {rec["name"]} | birthday - {rec["birthday"]} | address - {rec["address"]} | phones - {rec["phones"]} | email - {rec["email"]}'
+
     def add_record(self, obj):
         if isinstance(obj, Record):
             self.data[len(self.data)] = obj.records
@@ -205,17 +209,18 @@ class AddressBook(UserDict):
             raise ValueError(f'Parameter must be 3 or more symbol')
 
         if param.isalpha():
-            return list(filter(lambda value: param.lower() in value['name'].lower(), self.data.values()))
-
+            #result =  list(filter(lambda value: param.lower() in value['name'].lower(), self.data.values()))
+            for key, value in self.data.items():
+                if param.lower() in value['name'].lower():
+                    result.append(self[key])
+            return result
         elif param.isdigit():
 
-            for value in self.data.values():
+            for key, value in self.data.items():
                 if list((x for x in value['phones'] if param in x)):
-                    result.append(value)
-
+                    result.append(self[key])
             return result
         else:
-
             return result
 
 
