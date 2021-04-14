@@ -21,11 +21,12 @@ class Note(Field):
 
     @value.setter
     def value(self, value):
-        if re.match(r'\w', value) and len(value) < 30:
+        
+        if re.match(r'[A-Za-zА-Яа-я]\w', value) and 3 < len(value) < 30:
             self.__value = value
-        elif re.match(r'\w', value) and len(value) > 30:
+        elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) > 30:
             print('Note is more lenght')
-        elif len(value) < 4:
+        elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) < 3:
             print('Note is too short')
         else:
             print(f'Note is not text')
@@ -46,10 +47,12 @@ class Teg(Field):
         if not value:
             self.__value = value
         else:
-            if re.match(r'[A-Za-zА-Яа-я]\w{2}', value) and len(value) >= 3:
+            if re.match(r'[A-Za-zА-Яа-я]\w', value) and 3 < len(value) < 10:
                 self.__value = value
+            elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) < 3:
+                print('Teg must be 3 symbols min')
             else:
-                print(f'Teg is too long')
+                print(f'Teg is not text')
 
 
 class NoteRecord():
@@ -121,28 +124,31 @@ class NotesBook(UserDict):
             return(f'{index} is not exist in NoteBook.')
 
     def find_note(self, line):
-        self.value = str(line)
+        self.value = str.lower(line)
         self.dict_key = {}
         self.dict_value = {}
-        result_key = None
-        result_value = None
+        result = ''
         for key, value in self.data.items():
-            if line.isdigit():
-                if str(key).find(self.value) >= 0:
-                    self.dict_key[key] = self.data[key]
-            if line.isalpha():
-                if len(self.value) >= 3:
-                    if value['Note'].find(self.value) >= 0:
-                        self.dict_value[key] = value
-                else:
-                    return(f'{line} is too short')
-
+            if str(key).find(self.value) >= 0:
+                self.dict_key[key] = self.data[key]
+            if value['Note'].lower().find(self.value) >= 0:
+                self.dict_value[key] = value
+          
         if len(self.dict_key) > 0 and len(self.dict_value) > 0:
-            return self.dict_key, self.dict_value
+            for key, data in self.dict_key.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            for key, data in self.dict_value.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
+            
         elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
-            return self.dict_key
+            for key, data in self.dict_key.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
         elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
-            return self.dict_value
+            for key, data in self.dict_value.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
 
 
 # edit, del and find TEG
@@ -167,27 +173,34 @@ class NotesBook(UserDict):
             return 'Teg index is not exist'
 
     def find_teg(self, line):
-        self.value = str(line)
+        self.value = str.lower(line)
         self.dict_key = {}
         self.dict_value = {}
-
+        result = ''
+        
         for key, value in self.data.items():
-            if line.isdigit():
-                if str(key).find(self.value) >= 0:
+            if str(key).find(self.value) >= 0:
                     self.dict_key[key] = self.data[key]
-            if line.isalpha():
-                if len(self.value) >= 3:
-                    if value['Teg'].find(self.value) >= 0:
-                        self.dict_value[key] = value
-                else:
-                    return(f'{line} is too short')
+            if value['Teg'].lower().find(self.value) >= 0:
+                self.dict_value[key] = value
+                
 
         if len(self.dict_key) > 0 and len(self.dict_value) > 0:
-            return self.dict_key, self.dict_value
+            for key, data in self.dict_key.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            for key, data in self.dict_value.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
+
         elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
-            return self.dict_key
+            for key, data in self.dict_key.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
+            
         elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
-            return self.dict_value
+            for key, data in self.dict_value.items():
+                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            return result
 
 
 def save_notesBook(obj):
@@ -215,23 +228,5 @@ if __name__ == '__main__':
 
     while True:
         t = Teg(input('Enter the teg: '))
-        if t.value != None:
+        if t.value != '':
             break
-
-    record = NoteRecord(af, t)
-    record1 = NoteRecord(t, Note('Ghjcnj'))
-    record2 = NoteRecord(af)
-    book = NotesBook()
-    print(book.add_record(record))
-    print(book.add_record(record1))
-    print(book.add_record(record2))
-
-    c = Note(input('Enter the new note:'))
-    print(book.edit_note(0, c))
-    print(book.del_note(1))
-    print(book.add_record(record1))
-    print(book.edit_teg(0, Teg('weekf')))
-    # print(book.del_teg(0))
-    print(book.find_note('0'))
-    print(book.find_note('он'))
-    print(book.find_teg('week'))
