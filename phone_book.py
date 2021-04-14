@@ -61,7 +61,7 @@ class Phone(Field):
 
     @value.setter
     def value(self, new_value):
-        if not re.match('^\d{10}', new_value):
+        if not re.match('\d{10}$', new_value):
             raise ValueError('Phone number must have 10 digits')
         else:
             self.__value = new_value

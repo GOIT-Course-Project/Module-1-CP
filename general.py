@@ -210,11 +210,14 @@ def add_command(*args):
 
 def birthday_command(*args):
     result = []
+
     if CURRENT_MODE == '1':
         ab = loadAB()
         for key, rec in ab.data.items():
 
             if not args[0] == '':
+                if not args[0].isdigit():
+                    return print(f'Parametr must be a digits')
                 if load_obj_record(rec).days_to_birthday() <= int(args[0]):
                     result.append(ab[key])
             else:
@@ -387,7 +390,6 @@ def work_mode(*args):
                 print("Good Bye!")
                 CURRENT_MODE = ''
                 break
-            print(result)
     else:
         pass
 
