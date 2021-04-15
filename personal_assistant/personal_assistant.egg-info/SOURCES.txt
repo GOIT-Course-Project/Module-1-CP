@@ -5,7 +5,6 @@ personal_assistant/__init__.py
 personal_assistant/clean.py
 personal_assistant/general.py
 personal_assistant/notes_book.py
-personal_assistant/notes_book_1.py
 personal_assistant/phone_book.py
 personal_assistant.egg-info/PKG-INFO
 personal_assistant.egg-info/SOURCES.txt

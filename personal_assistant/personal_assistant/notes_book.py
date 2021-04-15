@@ -87,9 +87,10 @@ class NotesBook(UserDict):
         self._count = 0
 
     def __str__(self):
-        result = ''
+        result = []
         for key, data in self.data.items():
-            result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+            result.append(
+                f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}')
         return result
 
     def __getitem__(self, key):

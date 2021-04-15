@@ -242,16 +242,17 @@ def greeting_command(*args):
 def show_all_command(*args):
     if CURRENT_MODE == '1' and not CURRENT_RECORD:
         ab = loadAB()
-        print(ab)
+        for key in ab.data.keys():
+            print(ab[key])
     else:
         print(CURRENT_RECORD)
 
     if CURRENT_MODE == '2':
-        if not nb.load_notesBook():
-            noteB = nb.NotesBook()
-        else:
-            noteB = nb.load_notesBook()
-        print(noteB)
+        noteB = loadNB()
+        for key in noteB.data.keys():
+            print(noteB[key])
+    else:
+        print(CURRENT_RECORD)
 
 
 def select_command(*args):
@@ -401,7 +402,7 @@ def parse_command(command):
     for i in COMMANDS.keys():
         com = command.lower()
         if com.startswith(i):
-            data = parse_data(command, i)
+            data = parse_data(com, i)
             return COMMANDS[i](*data)
     return non_command()
 
@@ -419,6 +420,8 @@ def work_mode(*args):
                 break
             elif result == 'exit' and CURRENT_RECORD:
                 CURRENT_RECORD = None
+            elif result:
+                print(result)
     else:
         pass
 
