@@ -16,8 +16,6 @@ docFilters = ['.pdf', '.docx', '.txt', '.xlsx']
 
 musicFilters = ['.mp3', '.ogg', '.wav', '.amr']
 
-arhiveFilters = ['.zip', '.7zip', '.gz', '.tar']
-
 
 def normalize(string):
     """
@@ -120,12 +118,10 @@ def fileDistribute(fileCollections, path, nestingDeep):
 
             relocateFile(f'audios;{path};{fileName};{fileExtension}')
 
-        elif fileExtension in arhiveFilters:
-
-            relocateFile(f'archives;{path};{fileName};{fileExtension}')
-
 
 def grabPath(path, nestingDeep=0):
+    global GLOBAL_PATH
+    GLOBAL_PATH = path
 
     fileCollections = []
 
@@ -140,23 +136,8 @@ def grabPath(path, nestingDeep=0):
             fileCollections.append(file)
 
     fileDistribute(fileCollections, path, nestingDeep)
-
-
-def main():
-
-    # 'C:\Users\vdunk\Desktop\Trash' sys.argv[1]
-    grabPath(r'C:/Users/vdunk/Desktop/Trash/')
-
-
-def clean():
-    global GLOBAL_PATH
-    if len(sys.argv) == 1:
-        GLOBAL_PATH = os.getcwd()
-        grabPath(GLOBAL_PATH)
-    else:
-        GLOBAL_PATH = sys.argv[1]
-        grabPath(GLOBAL_PATH)
+    return True
 
 
 if __name__ == '__main__':
-    main()
+    pass
