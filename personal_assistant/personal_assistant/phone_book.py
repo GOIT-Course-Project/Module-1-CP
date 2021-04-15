@@ -209,11 +209,14 @@ class AddressBook(UserDict):
             raise ValueError(f'Parameter must be 3 or more symbol')
 
         if param.isalpha():
-            #result =  list(filter(lambda value: param.lower() in value['name'].lower(), self.data.values()))
-            for key, value in self.data.items():
-                if param.lower() in value['name'].lower():
-                    result.append(self[key])
+            # result =  list(filter(lambda value: param.lower() in value['name'].lower(), self.data.values()))
+            for key, val_dict in self.data.items():
+                for value in list(filter(lambda value: not isinstance(value, list), val_dict.values())):
+                    if param.lower() in value.lower():
+                        result.append(self[key])
+                        break
             return result
+
         elif param.isdigit():
 
             for key, value in self.data.items():
