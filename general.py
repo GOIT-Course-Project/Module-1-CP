@@ -1,7 +1,6 @@
 from os import error, name, supports_bytes_environ
-import re
 
-
+import clean
 import phone_book as pb
 import notes_book as nb
 
@@ -10,14 +9,14 @@ EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
 FIND_COMMANDS = ("find",)
 EDIT_COMMANDS = ("edit",)
 BIRTHDAY_COMMANDS = ("birthday",)
-SELECT_COMMANDS = ("select",)
+SELECT_COMMANDS = ("select","sel")
 ADD_COMMANDS = ("add", "+")
 DELETE_COMMANDS = ("delete", "del", "-",)
 GREETING_COMMANDS = ("hello", "alloha",)
 SHOW_ALL_COMMANDS = ("show all", "show")
 HELP_COMMANDS = ("help",)
-CURRENT_MODES = {'1': 'PhoneBook mode',
-                 '2': 'Notes mode', '3': 'Clear folder mode'}
+CURRENT_MODES = {'1': 'PhoneBook',
+                 '2': 'NotesBook', '3': 'SortFolder'}
 CURRENT_MODE = ''
 CURRENT_RECORD = None
 CURRENT_ID = None
@@ -48,6 +47,13 @@ def loadNB():
     else:
         notesB = nb.load_notesBook()
     return notesB
+
+
+def check_id(id):
+    result = False
+    if id.isdigit():
+        result = True
+    return result
 
 
 def input_name():
@@ -252,22 +258,32 @@ def show_all_command(*args):
 
 def select_command(*args):
     global CURRENT_RECORD, CURRENT_ID
+    if check_id(args[0]):
+        CURRENT_ID = args[0]
+    else:
+        print(f'Parametr "id" must be a digit not "{args[0]}"')
+        return None
     if CURRENT_MODE == '1':
         ab = loadAB()
-        CURRENT_ID = args[0]
         try:
             CURRENT_RECORD = load_obj_record(ab.data[int(CURRENT_ID)])
         except KeyError as e:
             print(f'Sorry, PhoneBook has no record with id {e}')
+
         # pb.Record(pb.Name(ab[int(args[0])]['name']), pb.Email(ab[int(args[0])]['email']), pb.Address(
         #     ab[int(args[0])]['address']), pb.Birthday(ab[int(args[0])]['birthday']), *(pb.Phone(i) for i in ab[int(args[0])]['phones']))
     elif CURRENT_MODE == '2':
         noteB = loadNB()
-        CURRENT_ID = args[0]
-        CURRENT_RECORD = load_obj_record(noteB.data[int(CURRENT_ID)])
+        try:
+            CURRENT_RECORD = load_obj_record(noteB.data[int(CURRENT_ID)])
+        except KeyError as e:
+            print(f'Sorry, NoteBook has no record with id {e}')
 
 
 def edit_command(*args):
+
+    if not CURRENT_RECORD:
+        print(f'Before editing record - please, select it. (Command "select id_record")')
 
     if CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'phone':
         new_phone = input_phone()
@@ -301,18 +317,21 @@ def edit_command(*args):
 
 
 def help_command(*args):
-    if CURRENT_MODE == '1':
-        print(f"""In {CURRENT_MODES[CURRENT_MODE]}.\n
-            You can see all records in your AddressBook - just type "Show" command \n
+    if CURRENT_MODE == '1' or CURRENT_MODE == '2':
+        print(f"""In {CURRENT_MODES[CURRENT_MODE]} mode.\n
+            You can see all records in your {CURRENT_MODES[CURRENT_MODE]} - just type "Show" command \n
             You can add, delete or edit record in your AddressBook\n
-            For adding type "add" or "+" \n
-            For deleting type "del" or "-" and specify the id record \n
-            Before editing you must select record, type "select" and specify the id \n """)
+            For adding type {ADD_COMMANDS} \n
+            For deleting type {DELETE_COMMANDS} and specify the id record \n
+            Before editing you must select record, type {SELECT_COMMANDS} and specify the id \n """)
+    elif CURRENT_MODE == '3':
+        print(f"""In {CURRENT_MODES[CURRENT_MODE]} mode.\n
+            You can sort and organize your folders, just type command "sort" and PATH to folder\n """)
     else:
         print(f"""I can work in different mode.\n
-            1. First - {CURRENT_MODES['1']} \n
-            2. Second - {CURRENT_MODES['2']} \n
-            3. Third - {CURRENT_MODES['3']}\n
+            1. First - {CURRENT_MODES['1']} mode\n
+            2. Second - {CURRENT_MODES['2']} mode\n
+            3. Third - {CURRENT_MODES['3']} mode\n
             in each mode you can call command 'help' for more information""")
 
 
@@ -381,11 +400,11 @@ def parse_command(command):
 def work_mode(*args):
     global CURRENT_MODE
     if args[0] in CURRENT_MODES.keys():
-        print(f'We are in {CURRENT_MODES[args[0]]}')
+        print(f'We are in {CURRENT_MODES[args[0]]} mode')
         CURRENT_MODE = args[0]
         while True:
             result = parse_command(
-                input(f'({CURRENT_MODES[args[0]]} {"" if not CURRENT_RECORD else str(CURRENT_RECORD) }) type command: '))
+                input(f'({CURRENT_MODES[args[0]]} mode {"" if not CURRENT_RECORD else str(CURRENT_RECORD) }) type command: '))
             if result == 'exit':
                 print("Good Bye!")
                 CURRENT_MODE = ''
@@ -405,4 +424,3 @@ if __name__ == '__main__':
         if result == 'exit':
             print("Good Bye!")
             break
-    print(result)
