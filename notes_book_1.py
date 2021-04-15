@@ -17,16 +17,16 @@ class Note(Field):
         return self.__value
 
     @value.setter
-    def value(self, value):
+    def value(self, new_value):
         
-        if re.match(r'[A-Za-zА-Яа-я]\w', value) and 3 < len(value) < 30:
-            self.__value = new_value
-        elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) > 30:
-            print('Note is more lenght')
-        elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) < 3:
-            print('Note is too short')
+        if not re.match(r'[A-Za-zА-Яа-я]\w', new_value) or len(new_value) <= 2:
+            raise ValueError('Note is not text')
+       # elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) > 30:
+          #  print('Note is more lenght')
+    #    elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) <= 2:
+            #print('Note is too short')
         else:
-            print(f'Note is not text')
+        	self.__value = new_value
 
 
 class Teg(Field):
@@ -44,12 +44,11 @@ class Teg(Field):
         if not value:
             self.__value = value
         else:
-            if re.match(r'[A-Za-zА-Яа-я]\w', value) and 3 < len(value) < 10:
-                self.__value = value
-            elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) < 3:
-                print('Teg must be 3 symbols min')
+            if not re.match(r'[A-Za-zА-Яа-я]\w', value) or 10 <= len(value) < 3:
+                raise ValueError('Teg must be 3 symbols min')
+          
             else:
-                print(f'Teg is not text')
+                self.__value = value
 
 
 class NoteRecord():
@@ -107,7 +106,7 @@ class NotesBook(UserDict):
         else:
             return 'Note index is not exist'
 
-    def del_note(self, index):
+    def delete_record(self, index):
         if index in self.data.keys():
             self.data.pop(index)
             new_nb = UserDict()
@@ -128,7 +127,7 @@ class NotesBook(UserDict):
         for key, value in self.data.items():
             if str(key).find(self.value) >= 0:
                 self.dict_key[key] = self.data[key]
-            if value['Note'].lower().find(self.value) >= 0:
+            if value['Note'].find(self.value) >= 0:
                 self.dict_value[key] = value
             if value['Teg'].lower().find(self.value) >= 0:
                 self.dict_value[key] = value
@@ -188,14 +187,4 @@ def load_notesBook():
 
 
 if __name__ == '__main__':
-
-    while True:
-        af = Note(input('Enter the note: '))
-
-        if af.value != None:
-            break
-
-    while True:
-        t = Teg(input('Enter the teg: '))
-        if t.value != '':
-            break
+	pass
