@@ -1,0 +1,3 @@
+[console_scripts]
+pa = personal_assistant.general:p_a
+

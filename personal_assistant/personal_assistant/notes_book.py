@@ -6,6 +6,7 @@ import re
 class Field():
     pass
 
+
 class Note(Field):
 
     def __init__(self, value):
@@ -18,7 +19,7 @@ class Note(Field):
 
     @value.setter
     def value(self, new_value):
-        
+
         if not re.match(r'[A-Za-zА-Яа-я]\w', new_value) or len(new_value) <= 2:
             raise ValueError('Note is not text')
        # elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) > 30:
@@ -26,7 +27,7 @@ class Note(Field):
     #    elif re.match(r'[A-Za-zА-Яа-я]\w', value) and len(value) <= 2:
             #print('Note is too short')
         else:
-        	self.__value = new_value
+            self.__value = new_value
 
 
 class Teg(Field):
@@ -46,7 +47,7 @@ class Teg(Field):
         else:
             if not re.match(r'[A-Za-zА-Яа-я]\w', value) or 10 <= len(value) < 3:
                 raise ValueError('Teg must be 3 symbols min')
-          
+
             else:
                 self.__value = value
 
@@ -62,6 +63,9 @@ class NoteRecord():
                 self.noterecors['Note'] = arg.value
             elif isinstance(arg, Teg):
                 self.noterecors['Teg'] = arg.value
+
+    def __str__(self):
+        return f'Note: {self.noterecors["Note"][:5]}... | Teg: {self.noterecors["Teg"]}'
 
     def edit_note(self, obj):
         if isinstance(obj, Note):
@@ -87,6 +91,10 @@ class NotesBook(UserDict):
         for key, data in self.data.items():
             result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
         return result
+
+    def __getitem__(self, key):
+        rec = self.data[key]
+        return f'id - {key} | Note: {rec["Note"]} | Teg: {rec["Teg"]}'
 
     def add_record(self, obj):
         if isinstance(obj, NoteRecord):
@@ -120,10 +128,13 @@ class NotesBook(UserDict):
             return(f'{index} is not exist in NoteBook.')
 
     def find_note(self, line):
+        if len(line) < 3:
+            raise ValueError(f'Parameter must be 3 or more symbol')
+
         self.value = str.lower(line)
         self.dict_key = {}
         self.dict_value = {}
-        result = ''
+        result = []
         for key, value in self.data.items():
             if str(key).find(self.value) >= 0:
                 self.dict_key[key] = self.data[key]
@@ -131,25 +142,26 @@ class NotesBook(UserDict):
                 self.dict_value[key] = value
             if value['Teg'].lower().find(self.value) >= 0:
                 self.dict_value[key] = value
-          
+
         if len(self.dict_key) > 0 and len(self.dict_value) > 0:
             for key, data in self.dict_key.items():
-                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+                result.append(self[key])
             for key, data in self.dict_value.items():
-                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+                result.append(self[key])
             return result
-            
+
         elif len(self.dict_key) > 0 and len(self.dict_value) == 0:
             for key, data in self.dict_key.items():
-                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+                result.append(self[key])
             return result
         elif len(self.dict_key) == 0 and len(self.dict_value) > 0:
             for key, data in self.dict_value.items():
-                result += f'id  {key} | note - {data["Note"]} | tegs - {data["Teg"]}\n'
+                result.append(self[key])
             return result
 
 
 # edit, del TEG
+
 
     def edit_teg(self, index, new_obj):
         self._count = 0
@@ -169,7 +181,7 @@ class NotesBook(UserDict):
             return self.data
         else:
             return 'Teg index is not exist'
-   
+
 
 def save_notesBook(obj):
     with open('notes_book.bin', 'wb') as file:
@@ -187,4 +199,4 @@ def load_notesBook():
 
 
 if __name__ == '__main__':
-	pass
+    pass

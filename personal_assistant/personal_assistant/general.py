@@ -1,8 +1,6 @@
 from os import error, name, supports_bytes_environ
 
-import clean
-import phone_book as pb
-import notes_book_1 as nb
+from personal_assistant import clean, phone_book as pb, notes_book as nb
 
 # tuple with commands words
 EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
@@ -375,8 +373,8 @@ def find_command(*args):
 
 
 def exit_command(*args):
-    global CURRENT_RECORD
-    CURRENT_RECORD = None
+    # global CURRENT_RECORD
+    # CURRENT_RECORD = None
     return('exit')
 
 
@@ -409,22 +407,23 @@ def parse_command(command):
 
 
 def work_mode(*args):
-    global CURRENT_MODE
+    global CURRENT_MODE, CURRENT_RECORD
     if args[0] in CURRENT_MODES.keys():
         print(f'We are in {CURRENT_MODES[args[0]]} mode')
         CURRENT_MODE = args[0]
         while True:
             result = parse_command(
                 input(f'({CURRENT_MODES[args[0]]} mode {"" if not CURRENT_RECORD else str(CURRENT_RECORD) }) type command: '))
-            if result == 'exit':
+            if result == 'exit' and not CURRENT_RECORD:
                 print("Good Bye!")
-                CURRENT_MODE = ''
                 break
+            elif result == 'exit' and CURRENT_RECORD:
+                CURRENT_RECORD = None
     else:
         pass
 
 
-if __name__ == '__main__':
+def p_a():
     print('Hi! I\'m your personal helper (PH). For more information type "help"')
     while True:
         result = input('PH says - please, select a workmode or "exit":')
@@ -435,3 +434,7 @@ if __name__ == '__main__':
         if result == 'exit':
             print("Good Bye!")
             break
+
+
+if __name__ == '__main__':
+    p_a()
