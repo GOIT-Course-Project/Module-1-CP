@@ -2,14 +2,14 @@ from os import error, name, supports_bytes_environ
 
 import clean
 import phone_book as pb
-import notes_book as nb
+import notes_book_1 as nb
 
 # tuple with commands words
 EXIT_COMMANDS = ("good bye", "close", "exit", "bye")
 FIND_COMMANDS = ("find",)
 EDIT_COMMANDS = ("edit",)
 BIRTHDAY_COMMANDS = ("birthday",)
-SELECT_COMMANDS = ("select","sel")
+SELECT_COMMANDS = ("select", "sel")
 ADD_COMMANDS = ("add", "+")
 DELETE_COMMANDS = ("delete", "del", "-",)
 GREETING_COMMANDS = ("hello", "alloha",)
@@ -286,13 +286,21 @@ def edit_command(*args):
         print(f'Before editing record - please, select it. (Command "select id_record")')
 
     if CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'phone':
+        try:
+            CURRENT_ID = args[1]
+        except IndexError:
+            print(f'Please type id phone after command')
+            return None
+        if not check_id(CURRENT_ID):
+            print(f'Parametr "id" must be a digit not "{CURRENT_ID}"')
+            return None
         new_phone = input_phone()
-        CURRENT_RECORD.delete_phone(int(args[0]))
+        CURRENT_RECORD.delete_phone(int(CURRENT_ID))
         CURRENT_RECORD.add_phone(new_phone)
         update_ab(CURRENT_RECORD)
 
     elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'name':
-        CURRENT_RECORD.records['name'] = input_name()
+        CURRENT_RECORD.records['name'] = input_name().value
         update_ab(CURRENT_RECORD)
 
     elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'birthday':
@@ -314,6 +322,9 @@ def edit_command(*args):
     elif CURRENT_MODE == '2' and CURRENT_RECORD and args[0].lower() == 'teg':
         CURRENT_RECORD.edit_teg(input_teg())
         update_nb(CURRENT_RECORD)
+
+    else:
+        print(non_command())
 
 
 def help_command(*args):
