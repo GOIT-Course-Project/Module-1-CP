@@ -39,7 +39,7 @@ def add_contact(*args):
     confirm = input(
         f'Add record {record} to address book (y/n)?: ')
     if confirm.lower() == 'y':
-        ab.add_record(record)
+        print(ab.add_record(record))
         pb.save_addressBook(ab)
 
 
@@ -55,7 +55,7 @@ def add_notes(*args):
     confirm = input(
         f'Add notes {record.noterecors} to NotessBook (y/n)?: ')
     if confirm.lower() == 'y':
-        notesB.add_record(record)
+        print(notesB.add_record(record))
         nb.save_notesBook(notesB)
 
 
@@ -281,6 +281,11 @@ def edit_command(*args):
 
     if not CURRENT_RECORD:
         print(f'Before editing record - please, select it. (Command "select id_record")')
+        return None
+
+    if not args[0]:
+        print(f'For edit field please type fieldname after command "edit"')
+        return None
 
     if CURRENT_MODE == '1' and CURRENT_RECORD and args[0].lower() == 'phone':
         try:
@@ -344,13 +349,19 @@ def help_command(*args):
 
 
 def delete_command(*args):
-    if CURRENT_MODE == '1' and not CURRENT_RECORD and args[0].isdigit():
+    if args[0] == '':
+        print(f'For delete record please type id after command')
+        return None
+    if CURRENT_MODE == '1' and not CURRENT_RECORD:
         delete_ab_record(args[0])
+        print((f'Record delete succsesful.'))
     elif CURRENT_MODE == '1' and CURRENT_RECORD and args[0] == 'phone':
         CURRENT_RECORD.delete_phone(int(args[1]))
+        print((f'Phone delete succsesful.'))
         update_ab(CURRENT_RECORD)
-    elif CURRENT_MODE == '2' and not CURRENT_RECORD and args[0].isdigit():
+    elif CURRENT_MODE == '2' and not CURRENT_RECORD:
         delete_nb_record(args[0])
+        print((f'Record delete succsesful.'))
 
 
 def find_command(*args):

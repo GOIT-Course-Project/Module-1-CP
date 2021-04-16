@@ -188,6 +188,7 @@ class AddressBook(UserDict):
     def add_record(self, obj):
         if isinstance(obj, Record):
             self.data[len(self.data)] = obj.records
+            return(f'Record was added succsesful.')
 
     def delete_record(self, key):
         if key in self.data:
@@ -198,6 +199,7 @@ class AddressBook(UserDict):
                 new_ab[i] = v
                 i += 1
             self.data = new_ab
+            return(f'Record with id = {key} delete succsesful.')
         else:
             return(f'{key} is not exist in AddressBook.')
 

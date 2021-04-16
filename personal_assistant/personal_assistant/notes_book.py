@@ -100,7 +100,7 @@ class NotesBook(UserDict):
     def add_record(self, obj):
         if isinstance(obj, NoteRecord):
             self.data[len(self.data)] = obj.noterecors
-            return self.data
+            return(f'Record was added succsesful.')
 
  # edit, del and find NOTE
     def edit_note(self, index, new_obj):
@@ -124,7 +124,7 @@ class NotesBook(UserDict):
                 new_nb[i] = v
                 i += 1
             self.data = new_nb
-            return self.data
+            return (f'Record with id = {index} delete succsesful.')
         else:
             return(f'{index} is not exist in NoteBook.')
 
