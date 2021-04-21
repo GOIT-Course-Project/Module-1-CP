@@ -10,6 +10,9 @@ class Field:
         self.__value = None
         self.value = value
 
+    def __repr__(self):
+        return self.value
+
     @property
     def value(self):
         return self.__value
@@ -107,28 +110,32 @@ class Record:
         for arg in args:
 
             if isinstance(arg, Name):
-                self.records['name'] = arg.value
+                self.records['name'] = arg
             elif isinstance(arg, Phone):
-                self.records['phones'].append(arg.value)
+                self.records['phones'].append(arg)
             elif isinstance(arg, Birthday):
-                self.records['birthday'] = arg.value
+                self.records['birthday'] = arg
             elif isinstance(arg, Email):
-                self.records['email'] = arg.value
+                self.records['email'] = arg
             elif isinstance(arg, Address):
-                self.records['address'] = arg.value
+                self.records['address'] = arg
 
     def __str__(self):
         result = f'Name - {self.records["name"]}, phones - {self.records["phones"]}, email - {self.records["email"]}, address - {self.records["address"]}, birthday - {self.records["birthday"]}'
         return result
 
+    def __getitem__(self, key):
+        result = self.records[key]
+        return result
+
     def add_phone(self, obj):
         if isinstance(obj, Phone):
-            self.records['phones'].append(obj.value)
+            self.records['phones'].append(obj)
             # self.record[self.name] = self.phones
 
     def edit_phone(self, index, obj):
         if isinstance(obj, Phone):
-            self.records['phones'][index] = obj.value
+            self.records['phones'][index] = obj
 
     def delete_phone(self, index):
         self.records['phones'].pop(index)
@@ -141,9 +148,9 @@ class Record:
     def days_to_birthday(self):
         __birthday = self.records['birthday']
 
-        if __birthday != '':
+        if __birthday.value != '':
             result = self.__count_days(datetime.now().date(), date(year=datetime.now().year, month=int(
-                __birthday.split('-')[0]), day=int(__birthday.split('-')[1])))
+                __birthday.value.split('-')[0]), day=int(__birthday.value.split('-')[1])))
 
             return result.days
         else:
@@ -178,16 +185,23 @@ class AddressBook(UserDict):
     def __str__(self):
         result = ''
         for key, data in self.data.items():
-            result += f'id - {key} | name - {data["name"]} | birthday - {data["birthday"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}\n'
+            # name - {data["name"]} | birthday - {data["birthday"]} | address - {data["address"]} | phones - {data["phones"]} | email - {data["email"]}
+            result += f'id - {key} | {data}\n'
         return result
+
+    def __repr__(self):
+        result = ''
+        for key, data in self.data.items():
+            result += f'id - {key} | {data} '
+        return
 
     def __getitem__(self, key):
         rec = self.data[key]
-        return f'id - {key} | name - {rec["name"]} | birthday - {rec["birthday"]} | address - {rec["address"]} | phones - {rec["phones"]} | email - {rec["email"]}'
+        return rec
 
     def add_record(self, obj):
         if isinstance(obj, Record):
-            self.data[len(self.data)] = obj.records
+            self.data[len(self.data)] = obj
             return(f'Record was added succsesful.')
 
     def delete_record(self, key):
@@ -245,4 +259,10 @@ def load_addressBook():
 
 
 if __name__ == '__main__':
-    pass
+    rec = Record(Name("Bobby"), Address("Kyiv"), Phone(
+        "0987654321"), Birthday("11-22"), Email(""))
+    ab = AddressBook()
+    ab.add_record(rec)
+    save_addressBook(ab)
+    ab1 = load_addressBook()
+    print(ab1)
